@@ -1,0 +1,6 @@
+name = "Deeson Drupal Challenge - Custom"
+description = "Custom changes for the current instance"
+core = 7.x
+package = DDC
+
+dependencies[] = xautoload

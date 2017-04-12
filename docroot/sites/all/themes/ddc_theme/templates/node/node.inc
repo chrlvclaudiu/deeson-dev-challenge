@@ -29,4 +29,26 @@ function ddc_theme_preprocess_node__article__teaser(&$variables) {
 
   // Create linked title.
   $variables['linked_title'] = l($variables['title'], 'node/' . $variables['nid']);
+
+  // Add a color to special articles
+  _ddc_theme_mark_special_article($variables);
+}
+
+function ddc_theme_preprocess_node__article__full(&$variables) {
+
+  // Add a color to special articles
+  _ddc_theme_mark_special_article($variables);
+}
+
+function _ddc_theme_mark_special_article(&$vars) {
+  // Load the metadata wrapper
+  $article_wrapper = entity_metadata_wrapper('node', $vars['node']);
+
+  // Check if the article is special
+  $article_is_special = $article_wrapper->field_article_is_special->value() == 'yes';
+
+  // Add a .special-article class to special articles
+  if ($article_is_special) {
+    $vars['classes_array'][] = 'special-article';
+  }
 }
