@@ -13,53 +13,78 @@ use Drupal\ddc_custom\EntityWrapper\Node\ArticleWrapper;
  */
 function ddc_custom_node_access($node, $op, $account) {
   // Used when content is viewed in full mode
-  $article_wrapper = new ArticleWrapper($node->nid);
-  return $article_wrapper->isPublished() ? NODE_ACCESS_IGNORE : NODE_ACCESS_DENY;
+  if (is_object($node)) {
+    $article_wrapper = new ArticleWrapper($node->nid);
+    return $article_wrapper->isPublished() ? NODE_ACCESS_IGNORE : NODE_ACCESS_DENY;
+  }
+
+  return NODE_ACCESS_IGNORE;
 }
 
 /**
  * Implements hook_node_view().
  */
-function ddc_custom_node_view($node, $view_mode, $langcode) {
-  /**
-   * Using this hook allows us to alter the content of a node being view
-   * We had to use this hook because articles displayed in listings (teaser mode)
-   * do not trigger hook_node_access hook.
-   *
-   * Solutions tried so far:
-   *
-   * 1. A combination of hook_node_grants() and hook_node_access_records(),
-   *    but failed to properly have a good result of the missing $node parameter
-   *    in hook_node_grants().
-   *
-   * 2. We could of course use some views hooks to alter the results set.
-   *
-   * 3. Using hook_node_view() works but has one important drawback:
-   *    content is not displayed, but the view keeps track of it and
-   *    it is not excluced from the view's results set.
-   *
-   * 4. Another solution is to use hook_query_TAG_alter() where TAG is "node_access",
-   *    but that's not our case here.
-   */
-  switch ($node->type) {
-    case 'article':
-      $article_wrapper = new ArticleWrapper($node->nid);
-      if (!$article_wrapper->isPublished()) {
-        $node->content['#access'] = FALSE;
-      }
-      break;
-  }
-}
+//function ddc_custom_node_view($node, $view_mode, $langcode) {
+//  /**
+//   * Using this hook allows us to alter the content of a node being view
+//   * We had to use this hook because articles displayed in listings (teaser mode)
+//   * do not trigger hook_node_access hook.
+//   *
+//   * Solutions tried so far:
+//   *
+//   * 1. A combination of hook_node_grants() and hook_node_access_records(),
+//   *    but failed to properly have a good result of the missing $node parameter
+//   *    in hook_node_grants().
+//   *
+//   * 2. We could of course use some views hooks to alter the results set.
+//   *
+//   * 3. Using hook_node_view() works but has one important drawback:
+//   *    content is not displayed, but the view keeps track of it and
+//   *    it is not excluced from the view's results set.
+//   *
+//   * 4. Another solution is to use hook_query_TAG_alter() where TAG is "node_access",
+//   *    but that's not our case here.
+//   */
+//  switch ($node->type) {
+//    case 'article':
+//      $article_wrapper = new ArticleWrapper($node->nid);
+//      if (!$article_wrapper->isPublished()) {
+//        $node->content['#access'] = FALSE;
+//      }
+//      break;
+//  }
+//}
 
 /**
  * Implements hook_query_TAG_alter().
  */
 /**
 function ddc_custom_query_node_access_alter(QueryAlterableInterface $query) {
-  if (isset($query->tables) && isset($query->tables['node'])) {
+  if (isset($query->tables) && !empty($query->tables['node'])) {
     $query->leftJoin('field_data_field_article_publication_date', 'fdfapd', 'node.nid = fdfapd.entity_id');
     $query->condition(db_or()
         ->condition('fdfapd.field_article_publication_date_value', REQUEST_TIME, '>=')
         ->condition('fdfapd.field_article_publication_date_value'));
   }
 }*/
+
+/**
+ * Implements hook_views_pre_render().
+ *
+ * Remove unpublished articles from the views
+ */
+function ddc_custom_views_pre_render(&$view) {
+  // Process results only for nodes
+  if (isset($view->base_table) && $view->base_table == 'node') {
+    foreach ($view->result as $k => $result) {
+      // Instantiate the wrapper
+      $article_wrapper = new ArticleWrapper($result->nid);
+      // Check if it's published or not
+      if (!$article_wrapper->isPublished()) {
+        unset($view->result[$k]);
+      }
+    }
+    // Re-arrange the keys of the results set.
+    $view->result = array_values($view->result);
+  }
+}

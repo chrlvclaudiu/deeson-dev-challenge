@@ -30,9 +30,11 @@ class ArticleWrapper extends EntityDrupalWrapper {
    * @return boolean
    */
   public function isPublished() {
-    if (user_is_anonymous()) {
+    if (user_is_anonymous() && $this->getBundle() == 'article') {
       $publication_date = $this->field_article_publication_date->value();
-      return $publication_date < REQUEST_TIME;
+      if (isset($publication_date)) {
+        return $publication_date < REQUEST_TIME;
+      }
     }
 
     return TRUE;
