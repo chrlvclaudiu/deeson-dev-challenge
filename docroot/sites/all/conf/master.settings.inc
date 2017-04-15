@@ -47,6 +47,7 @@ $conf['master_modules'] = array(
     'views_bulk_operations',
     'entity',
     'entityreference',
+    'views_load_more',
 
     //Features
     'ddc_article',

@@ -14,7 +14,7 @@ $aliases['local'] = array(
   'env' => 'vdd',
   'scope' => 'local',
   'uri' => 'deeson.local',
-  'root' => '/home/chrlvclaudiu/www/deeson-dev-challenge/docroot',
+  'root' => '/home/chrlvclaudiu/www/chrlvclaudiudeeson/docroot',
 );
 
 $envs = array(
