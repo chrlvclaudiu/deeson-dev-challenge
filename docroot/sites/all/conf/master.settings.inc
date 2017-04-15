@@ -48,6 +48,10 @@ $conf['master_modules'] = array(
     'entity',
     'entityreference',
     'views_load_more',
+    'entity_token',
+    'views_ui',
+    'apachesolr',
+    'apachesolr_search',
 
     //Features
     'ddc_article',
